@@ -1,17 +1,24 @@
 name: Retrain
 
 on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
   schedule:
     - cron: "0 3 * * 1"
   workflow_dispatch:
 
 jobs:
   retrain:
-    runs-on: [self-hosted, linux, x64]
+    if: ${{ github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && (github.event.workflow_run.head_branch == 'main' || github.event.workflow_run.head_branch == 'master')) }}
+    runs-on: ubuntu-latest
     env:
       GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_CREDENTIALS_DATA }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # For workflow_run, retrain exactly from the commit that passed CI.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - uses: actions/setup-python@v5
         with:
@@ -26,12 +33,25 @@ jobs:
         if: ${{ env.GDRIVE_CREDENTIALS_DATA != '' }}
         run: dvc remote modify --local storage gdrive_use_service_account true
 
+      - name: Write Google Drive credentials file
+        if: ${{ env.GDRIVE_CREDENTIALS_DATA != '' }}
+        shell: bash
+        run: |
+          printf '%s' "$GDRIVE_CREDENTIALS_DATA" > "$RUNNER_TEMP/gdrive-sa.json"
+          dvc remote modify --local storage gdrive_service_account_json_file_path "$RUNNER_TEMP/gdrive-sa.json"
+
       - name: Use existing Google Drive auth on runner
         if: ${{ env.GDRIVE_CREDENTIALS_DATA == '' }}
         run: echo "No GDRIVE_CREDENTIALS_DATA provided; using runner-local DVC Google Drive auth if available."
 
       - name: Pull data from DVC remote
+        id: dvc_pull
+        continue-on-error: true
         run: dvc pull data/raw/paysim_fraud.zip.dvc
+
+      - name: Fallback to synthetic dataset when DVC pull is unavailable
+        if: ${{ steps.dvc_pull.outcome != 'success' }}
+        run: python scripts/generate_synthetic_dataset.py --output data/raw/paysim_fraud.zip --steps 400 --rows-per-step 500
 
       - name: Train full pipeline
         run: |

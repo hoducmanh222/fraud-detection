@@ -1,6 +1,9 @@
 name: CD
 
 on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
   push:
     tags:
       - "v*"
@@ -12,11 +15,35 @@ permissions:
 
 jobs:
   build-and-push:
+    if: ${{ github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && (github.event.workflow_run.head_branch == 'main' || github.event.workflow_run.head_branch == 'master')) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # For workflow_run, build/push the exact commit that passed CI.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - uses: docker/setup-buildx-action@v3
+
+      - name: Set image metadata (API)
+        id: meta_api
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/fraud-detection-api
+          tags: |
+            type=raw,value=latest
+            type=sha,format=short
+            type=ref,event=tag
+
+      - name: Set image metadata (Streamlit)
+        id: meta_streamlit
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/fraud-detection-streamlit
+          tags: |
+            type=raw,value=latest
+            type=sha,format=short
+            type=ref,event=tag
 
       - uses: docker/login-action@v3
         with:
@@ -30,7 +57,8 @@ jobs:
           context: .
           file: Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/fraud-detection-api:${{ github.ref_name }}
+          tags: ${{ steps.meta_api.outputs.tags }}
+          labels: ${{ steps.meta_api.outputs.labels }}
 
       - name: Build and push Streamlit image
         uses: docker/build-push-action@v6
@@ -38,4 +66,5 @@ jobs:
           context: .
           file: streamlit_app/Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/fraud-detection-streamlit:${{ github.ref_name }}
+          tags: ${{ steps.meta_streamlit.outputs.tags }}
+          labels: ${{ steps.meta_streamlit.outputs.labels }}
