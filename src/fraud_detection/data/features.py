@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable, List
 
 import numpy as np
 import pandas as pd
@@ -9,7 +9,6 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
-
 
 RAW_FEATURE_COLUMNS = [
     "step",
@@ -57,8 +56,8 @@ NUMERIC_ENGINEERED_COLUMNS = [
 
 @dataclass
 class FeatureSpec:
-    numeric: List[str]
-    categorical: List[str]
+    numeric: list[str]
+    categorical: list[str]
 
 
 def get_feature_spec() -> FeatureSpec:
@@ -75,7 +74,7 @@ class FraudFeatureBuilder(BaseEstimator, TransformerMixin):
         self.origin_counts_: dict[str, int] = {}
         self.destination_counts_: dict[str, int] = {}
 
-    def fit(self, X: pd.DataFrame, y: Iterable[int] | None = None) -> "FraudFeatureBuilder":
+    def fit(self, X: pd.DataFrame, y: Iterable[int] | None = None) -> FraudFeatureBuilder:
         frame = self._coerce_frame(X)
         self.origin_counts_ = frame["nameOrig"].value_counts().to_dict()
         self.destination_counts_ = frame["nameDest"].value_counts().to_dict()
@@ -111,8 +110,12 @@ class FraudFeatureBuilder(BaseEstimator, TransformerMixin):
         engineered["orig_prefix"] = frame["nameOrig"].str[:1].fillna("U")
         engineered["dest_prefix"] = frame["nameDest"].str[:1].fillna("U")
         engineered["dest_is_merchant"] = (engineered["dest_prefix"] == "M").astype(float)
-        engineered["orig_txn_count"] = frame["nameOrig"].map(self.origin_counts_).fillna(0).astype(float)
-        engineered["dest_txn_count"] = frame["nameDest"].map(self.destination_counts_).fillna(0).astype(float)
+        engineered["orig_txn_count"] = (
+            frame["nameOrig"].map(self.origin_counts_).fillna(0).astype(float)
+        )
+        engineered["dest_txn_count"] = (
+            frame["nameDest"].map(self.destination_counts_).fillna(0).astype(float)
+        )
         engineered["orig_seen_before"] = (engineered["orig_txn_count"] > 0).astype(float)
         engineered["dest_seen_before"] = (engineered["dest_txn_count"] > 0).astype(float)
 
@@ -141,4 +144,3 @@ def build_preprocessor(scale_numeric: bool) -> ColumnTransformer:
         ],
         sparse_threshold=0.3,
     )
-

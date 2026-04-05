@@ -9,7 +9,6 @@ import pandas as pd
 from fraud_detection.config import load_yaml
 from fraud_detection.utils.paths import ensure_dirs, find_project_root
 
-
 NUMERIC_COLUMNS = [
     "step",
     "amount",
@@ -31,9 +30,13 @@ def _psi(reference: pd.Series, current: pd.Series, bins: int = 10) -> float:
     reference_hist, _ = np.histogram(reference, bins=edges)
     current_hist, _ = np.histogram(current, bins=edges)
 
-    reference_ratio = np.where(reference_hist == 0, 1e-6, reference_hist / max(reference_hist.sum(), 1))
+    reference_ratio = np.where(
+        reference_hist == 0, 1e-6, reference_hist / max(reference_hist.sum(), 1)
+    )
     current_ratio = np.where(current_hist == 0, 1e-6, current_hist / max(current_hist.sum(), 1))
-    return float(np.sum((current_ratio - reference_ratio) * np.log(current_ratio / reference_ratio)))
+    return float(
+        np.sum((current_ratio - reference_ratio) * np.log(current_ratio / reference_ratio))
+    )
 
 
 def _categorical_diff(reference: pd.Series, current: pd.Series) -> float:
@@ -50,9 +53,15 @@ def generate_drift_report() -> None:
     cfg = load_yaml("configs/monitoring.yaml")
     monitoring_cfg = cfg.get("monitoring", {})
 
-    reference_path = project_root / str(monitoring_cfg.get("reference_path", "data/processed/reference.parquet"))
-    current_path = project_root / str(monitoring_cfg.get("current_path", "data/processed/current.parquet"))
-    report_path = project_root / str(monitoring_cfg.get("report_path", "reports/drift/drift_report.json"))
+    reference_path = project_root / str(
+        monitoring_cfg.get("reference_path", "data/processed/reference.parquet")
+    )
+    current_path = project_root / str(
+        monitoring_cfg.get("current_path", "data/processed/current.parquet")
+    )
+    report_path = project_root / str(
+        monitoring_cfg.get("report_path", "reports/drift/drift_report.json")
+    )
     ensure_dirs(report_path.parent)
 
     reference_df = pd.read_parquet(reference_path)
@@ -114,4 +123,3 @@ def generate_drift_report() -> None:
         json.dump(report, handle, indent=2)
 
     print(json.dumps(report, indent=2))
-

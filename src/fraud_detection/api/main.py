@@ -16,13 +16,12 @@ from fraud_detection.api.schemas import (
     TransactionRequest,
 )
 from fraud_detection.api.service import (
+    ModelLoadError,
     health_status,
     latest_drift_report,
-    ModelLoadError,
     model_metadata,
     predict_records,
 )
-
 
 REQUEST_COUNTER = Counter(
     "fraud_api_requests_total",

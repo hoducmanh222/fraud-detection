@@ -1,10 +1,7 @@
 from __future__ import annotations
 
-from typing import Dict
-
 import pandera.pandas as pa
 from pandera import Check
-
 
 RAW_COLUMNS = [
     "step",
@@ -20,7 +17,7 @@ RAW_COLUMNS = [
     "isFlaggedFraud",
 ]
 
-RAW_DTYPES: Dict[str, str] = {
+RAW_DTYPES: dict[str, str] = {
     "step": "int32",
     "type": "string",
     "amount": "float64",
@@ -53,4 +50,3 @@ def build_raw_schema(allowed_types: list[str]) -> pa.DataFrameSchema:
         strict=True,
         coerce=True,
     )
-

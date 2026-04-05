@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from fraud_detection.data.features import FraudFeatureBuilder, RAW_FEATURE_COLUMNS, get_feature_spec
+from fraud_detection.data.features import RAW_FEATURE_COLUMNS, FraudFeatureBuilder, get_feature_spec
 
 
 def test_feature_builder_outputs_expected_columns() -> None:
@@ -42,4 +42,3 @@ def test_feature_builder_outputs_expected_columns() -> None:
     assert set(feature_spec.categorical).issubset(set(transformed.columns))
     assert "nameOrig" not in transformed.columns
     assert transformed["orig_txn_count"].iloc[0] >= 1
-

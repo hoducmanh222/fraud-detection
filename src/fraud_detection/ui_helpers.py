@@ -44,9 +44,8 @@ def load_local_status() -> dict[str, Any]:
     payload: dict[str, Any] = {}
     for key, path in paths.items():
         if path.exists():
-            with open(path, "r", encoding="utf-8") as handle:
+            with open(path, encoding="utf-8") as handle:
                 payload[key] = json.load(handle)
         else:
             payload[key] = {}
     return payload
-

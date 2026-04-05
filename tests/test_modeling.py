@@ -26,7 +26,7 @@ def test_lightgbm_candidate_training_if_available(project_root) -> None:
 
     prepare_datasets()
     train_cfg_path = project_root / "configs" / "train.yaml"
-    with open(train_cfg_path, "r", encoding="utf-8") as handle:
+    with open(train_cfg_path, encoding="utf-8") as handle:
         config = yaml.safe_load(handle)
     config["models"]["candidates"] = ["lightgbm"]
     config["models"]["optuna"]["enabled"] = False

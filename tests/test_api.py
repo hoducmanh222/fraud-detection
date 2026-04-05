@@ -34,4 +34,3 @@ def test_api_predict_and_model_metadata(project_root) -> None:
     assert predict.status_code == 200
     assert metadata.status_code == 200
     assert "fraud_probability" in predict.json()
-

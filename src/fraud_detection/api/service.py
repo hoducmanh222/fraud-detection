@@ -29,7 +29,7 @@ def _resolve_bundle_path() -> Path:
         serve_cfg.get("service", {}).get("active_registry_path", "models/registry/champion.json")
     )
     if active_registry.exists():
-        with open(active_registry, "r", encoding="utf-8") as handle:
+        with open(active_registry, encoding="utf-8") as handle:
             registry_payload = json.load(handle)
         bundle_path = registry_payload.get("bundle_path")
         registry_bundle = project_root / str(bundle_path) if bundle_path else None
@@ -37,7 +37,9 @@ def _resolve_bundle_path() -> Path:
             return registry_bundle
 
     configured = project_root / str(
-        serve_cfg.get("service", {}).get("model_bundle_path", "models/trained/production_model.joblib")
+        serve_cfg.get("service", {}).get(
+            "model_bundle_path", "models/trained/production_model.joblib"
+        )
     )
     if configured.is_file():
         return configured
@@ -126,5 +128,5 @@ def latest_drift_report() -> dict[str, Any]:
     report_path = project_root / "reports" / "drift" / "drift_report.json"
     if not report_path.exists():
         return {"summary": {"status": "missing"}, "numeric": {}, "categorical": {}}
-    with open(report_path, "r", encoding="utf-8") as handle:
+    with open(report_path, encoding="utf-8") as handle:
         return json.load(handle)

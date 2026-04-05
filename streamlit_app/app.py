@@ -5,8 +5,11 @@ import os
 import requests
 import streamlit as st
 
-from fraud_detection.ui_helpers import default_transaction_payload, load_local_status, parse_batch_csv
-
+from fraud_detection.ui_helpers import (
+    default_transaction_payload,
+    load_local_status,
+    parse_batch_csv,
+)
 
 API_URL = os.getenv("API_URL", "http://localhost:8000")
 
@@ -36,15 +39,25 @@ with tabs[0]:
     with col1:
         step = st.number_input("Step", min_value=1, value=int(defaults["step"]))
         amount = st.number_input("Amount", min_value=0.0, value=float(defaults["amount"]))
-        transaction_type = st.selectbox("Type", ["TRANSFER", "CASH_OUT", "PAYMENT", "DEBIT", "CASH_IN"], index=0)
+        transaction_type = st.selectbox(
+            "Type", ["TRANSFER", "CASH_OUT", "PAYMENT", "DEBIT", "CASH_IN"], index=0
+        )
     with col2:
         name_orig = st.text_input("Origin account", value=str(defaults["nameOrig"]))
-        old_balance_org = st.number_input("Old origin balance", min_value=0.0, value=float(defaults["oldbalanceOrg"]))
-        new_balance_orig = st.number_input("New origin balance", min_value=0.0, value=float(defaults["newbalanceOrig"]))
+        old_balance_org = st.number_input(
+            "Old origin balance", min_value=0.0, value=float(defaults["oldbalanceOrg"])
+        )
+        new_balance_orig = st.number_input(
+            "New origin balance", min_value=0.0, value=float(defaults["newbalanceOrig"])
+        )
     with col3:
         name_dest = st.text_input("Destination account", value=str(defaults["nameDest"]))
-        old_balance_dest = st.number_input("Old destination balance", min_value=0.0, value=float(defaults["oldbalanceDest"]))
-        new_balance_dest = st.number_input("New destination balance", min_value=0.0, value=float(defaults["newbalanceDest"]))
+        old_balance_dest = st.number_input(
+            "Old destination balance", min_value=0.0, value=float(defaults["oldbalanceDest"])
+        )
+        new_balance_dest = st.number_input(
+            "New destination balance", min_value=0.0, value=float(defaults["newbalanceDest"])
+        )
 
     if st.button("Score Transaction", use_container_width=True):
         payload = {
@@ -104,4 +117,3 @@ with tabs[4]:
     st.json(status.get("promotion", {}))
     st.write("Latest training summary")
     st.json(status.get("training", {}))
-

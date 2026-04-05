@@ -25,4 +25,3 @@ def test_default_transaction_payload_shape() -> None:
         "oldbalanceDest",
         "newbalanceDest",
     }
-

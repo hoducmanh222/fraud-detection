@@ -12,9 +12,10 @@ def test_promotion_writes_decision(project_root) -> None:
     train_models()
     evaluate_promotion()
 
-    with open(project_root / "models" / "registry" / "last_promotion.json", "r", encoding="utf-8") as handle:
+    with open(
+        project_root / "models" / "registry" / "last_promotion.json", encoding="utf-8"
+    ) as handle:
         payload = json.load(handle)
 
     assert "promote" in payload
     assert payload["reasons"]
-

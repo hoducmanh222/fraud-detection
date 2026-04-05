@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from pydantic import BaseModel, Field
 
@@ -36,15 +36,14 @@ class ModelMetadataResponse(BaseModel):
     selected_model: str
     threshold: float
     trained_at: Optional[str] = None
-    validation_metrics: Dict[str, Any] = Field(default_factory=dict)
-    test_metrics: Dict[str, Any] = Field(default_factory=dict)
+    validation_metrics: dict[str, Any] = Field(default_factory=dict)
+    test_metrics: dict[str, Any] = Field(default_factory=dict)
 
 
 class DriftResponse(BaseModel):
-    summary: Dict[str, Any]
-    numeric: Dict[str, Any]
-    categorical: Dict[str, Any]
+    summary: dict[str, Any]
+    numeric: dict[str, Any]
+    categorical: dict[str, Any]
 
 
-BatchPredictionRequest = List[TransactionRequest]
-
+BatchPredictionRequest = list[TransactionRequest]

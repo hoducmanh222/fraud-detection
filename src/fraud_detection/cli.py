@@ -14,10 +14,14 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     prepare = subparsers.add_parser("prepare", help="Validate and split raw data")
-    prepare.add_argument("--sample-rows", type=int, default=None, help="Optional row cap for smoke runs")
+    prepare.add_argument(
+        "--sample-rows", type=int, default=None, help="Optional row cap for smoke runs"
+    )
 
     train = subparsers.add_parser("train", help="Train and select models")
-    train.add_argument("--sample-rows", type=int, default=None, help="Optional row cap for smoke runs")
+    train.add_argument(
+        "--sample-rows", type=int, default=None, help="Optional row cap for smoke runs"
+    )
 
     subparsers.add_parser("evaluate", help="Evaluate the selected model")
     subparsers.add_parser("monitor", help="Generate drift report")
@@ -45,4 +49,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

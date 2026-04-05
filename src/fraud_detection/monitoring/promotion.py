@@ -4,17 +4,17 @@ import json
 import shutil
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 from fraud_detection.config import load_yaml, save_yaml
 from fraud_detection.utils.mlflow_utils import register_model_alias
 from fraud_detection.utils.paths import ensure_dirs, find_project_root
 
 
-def _load_json(path: Path) -> Dict[str, Any]:
+def _load_json(path: Path) -> dict[str, Any]:
     if not path.exists():
         return {}
-    with open(path, "r", encoding="utf-8") as handle:
+    with open(path, encoding="utf-8") as handle:
         return json.load(handle)
 
 
@@ -63,7 +63,9 @@ def evaluate_promotion() -> None:
             promote = False
             reasons.append("candidate does not beat champion by required AUPRC delta")
 
-    candidate_bundle = project_root / str(candidate.get("bundle_path", "models/trained/model_bundle.joblib"))
+    candidate_bundle = project_root / str(
+        candidate.get("bundle_path", "models/trained/model_bundle.joblib")
+    )
     production_bundle = trained_dir / "production_model.joblib"
     mlflow_result = {"registered": False, "reason": "promotion-not-run"}
 
@@ -80,7 +82,9 @@ def evaluate_promotion() -> None:
         if mlflow.get("enabled") and (mlflow.get("model_uri") or mlflow.get("run_id")):
             source_uri = str(mlflow.get("model_uri") or f"runs:/{mlflow['run_id']}/model")
             mlflow_result = register_model_alias(
-                model_name=str(train_cfg.get("experiment", {}).get("registered_model_name", "fraud-detector")),
+                model_name=str(
+                    train_cfg.get("experiment", {}).get("registered_model_name", "fraud-detector")
+                ),
                 source_uri=source_uri,
                 alias="champion",
             )
@@ -88,9 +92,13 @@ def evaluate_promotion() -> None:
         updated_serve_cfg = dict(serve_cfg)
         updated_serve_cfg.setdefault("service", {})
         updated_serve_cfg.setdefault("model", {})
-        updated_serve_cfg["service"]["model_bundle_path"] = str(production_bundle.relative_to(project_root))
+        updated_serve_cfg["service"]["model_bundle_path"] = str(
+            production_bundle.relative_to(project_root)
+        )
         updated_serve_cfg["model"]["threshold"] = float(candidate.get("threshold", 0.5))
-        updated_serve_cfg["model"]["selected_model"] = str(candidate.get("selected_model", "unknown"))
+        updated_serve_cfg["model"]["selected_model"] = str(
+            candidate.get("selected_model", "unknown")
+        )
         updated_serve_cfg["model"]["version"] = str(candidate.get("version", "unknown"))
         updated_serve_cfg["model"]["trained_at"] = promoted_manifest["promoted_at"]
         save_yaml("configs/serve.yaml", updated_serve_cfg)

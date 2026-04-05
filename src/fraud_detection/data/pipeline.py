@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
-from typing import Any, Dict
 import zipfile
+from pathlib import Path
+from typing import Any
 
 import pandas as pd
 
@@ -13,7 +13,7 @@ from fraud_detection.utils.paths import ensure_dirs, find_project_root
 
 
 def read_raw_dataset(raw_path: Path, csv_name: str, sample_rows: int | None = None) -> pd.DataFrame:
-    read_kwargs: Dict[str, Any] = {"dtype": RAW_DTYPES, "usecols": RAW_COLUMNS}
+    read_kwargs: dict[str, Any] = {"dtype": RAW_DTYPES, "usecols": RAW_COLUMNS}
     if sample_rows is not None:
         read_kwargs["nrows"] = sample_rows
     with zipfile.ZipFile(raw_path) as archive:

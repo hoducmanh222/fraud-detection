@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-
 PROJECT_ROOT_ENV = "FRAUD_DETECTION_ROOT"
 
 
@@ -22,4 +21,3 @@ def find_project_root() -> Path:
 def ensure_dirs(*paths: Path) -> None:
     for path in paths:
         path.mkdir(parents=True, exist_ok=True)
-

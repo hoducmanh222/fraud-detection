@@ -63,6 +63,7 @@ target-version = "py39"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "N", "C4"]
+ignore = ["N803", "N806", "N815", "UP045"]
 
 [tool.ruff.format]
 quote-style = "double"

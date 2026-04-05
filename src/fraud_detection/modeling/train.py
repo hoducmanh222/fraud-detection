@@ -6,7 +6,6 @@ from copy import deepcopy
 from datetime import datetime, timezone
 from typing import Any
 
-
 import joblib
 import numpy as np
 import pandas as pd
@@ -25,7 +24,11 @@ from sklearn.metrics import (
 from sklearn.pipeline import Pipeline
 
 from fraud_detection.config import load_yaml, save_yaml
-from fraud_detection.data.features import RAW_FEATURE_COLUMNS, FraudFeatureBuilder, build_preprocessor
+from fraud_detection.data.features import (
+    RAW_FEATURE_COLUMNS,
+    FraudFeatureBuilder,
+    build_preprocessor,
+)
 from fraud_detection.utils.mlflow_utils import (
     configure_mlflow,
     get_mlflow,
@@ -38,16 +41,21 @@ from fraud_detection.utils.mlflow_utils import (
 )
 from fraud_detection.utils.paths import ensure_dirs, find_project_root
 
-
+optuna: Any = None
 try:
-    import optuna
+    import optuna as _optuna
 except ImportError:  # pragma: no cover - optional at import time
-    optuna = None
+    pass
+else:
+    optuna = _optuna
 
+LGBMClassifier: Any = None
 try:
-    from lightgbm import LGBMClassifier
+    from lightgbm import LGBMClassifier as _LGBMClassifier
 except ImportError:  # pragma: no cover - optional at import time
-    LGBMClassifier = None
+    pass
+else:
+    LGBMClassifier = _LGBMClassifier
 
 
 def _compute_metrics(y_true: pd.Series, y_score: np.ndarray, threshold: float) -> dict[str, Any]:
@@ -97,7 +105,7 @@ def _tune_threshold(
     min_precision: float,
     max_fpr: float,
     fallback_threshold: float,
-) -> tuple[float, dict[str, float]]:
+) -> tuple[float, dict[str, Any]]:
     if y_true.nunique() < 2:
         return fallback_threshold, {
             "selected_threshold": fallback_threshold,
@@ -156,7 +164,9 @@ def _build_logistic_pipeline(model_cfg: dict[str, Any], seed: int) -> Pipeline:
     )
 
 
-def _build_lightgbm_pipeline(model_cfg: dict[str, Any], seed: int, scale_pos_weight: float) -> Pipeline:
+def _build_lightgbm_pipeline(
+    model_cfg: dict[str, Any], seed: int, scale_pos_weight: float
+) -> Pipeline:
     if LGBMClassifier is None:
         raise ImportError("lightgbm is required to train the champion candidate")
 
@@ -199,7 +209,7 @@ def _optimize_lightgbm(
     if not optuna_cfg.get("enabled", True) or optuna is None:
         return base_params
 
-    def objective(trial: optuna.Trial) -> float:
+    def objective(trial: Any) -> float:
         params = deepcopy(base_params)
         params.update(
             {
@@ -297,7 +307,9 @@ def train_models(sample_rows: int | None = None) -> None:
 
     seed = int(data_cfg.get("project", {}).get("seed", 42))
     target_column = str(data_cfg.get("data", {}).get("target_column", "isFraud"))
-    processed_dir = project_root / str(data_cfg.get("data", {}).get("processed_dir", "data/processed"))
+    processed_dir = project_root / str(
+        data_cfg.get("data", {}).get("processed_dir", "data/processed")
+    )
     reports_dir = project_root / "reports" / "metrics"
     model_dir = project_root / "models" / "trained"
     registry_dir = project_root / "models" / "registry"
@@ -309,8 +321,12 @@ def train_models(sample_rows: int | None = None) -> None:
 
     if sample_rows:
         train_df = _limit_dataset_preserve_positives(train_df, sample_rows, target_column, seed)
-        val_df = _limit_dataset_preserve_positives(val_df, max(100, sample_rows // 5), target_column, seed)
-        test_df = _limit_dataset_preserve_positives(test_df, max(100, sample_rows // 5), target_column, seed)
+        val_df = _limit_dataset_preserve_positives(
+            val_df, max(100, sample_rows // 5), target_column, seed
+        )
+        test_df = _limit_dataset_preserve_positives(
+            test_df, max(100, sample_rows // 5), target_column, seed
+        )
 
     X_train = train_df[RAW_FEATURE_COLUMNS]
     y_train = train_df[target_column]
@@ -386,7 +402,9 @@ def train_models(sample_rows: int | None = None) -> None:
                 }
             )
 
-            if best_validation is None or float(val_metrics["auprc"]) > float(best_validation["auprc"]):
+            if best_validation is None or float(val_metrics["auprc"]) > float(
+                best_validation["auprc"]
+            ):
                 best_name = name
                 best_pipeline = model
                 best_threshold = threshold
@@ -444,7 +462,7 @@ def train_models(sample_rows: int | None = None) -> None:
         with open(reports_dir / "train_metrics.json", "w", encoding="utf-8") as handle:
             json.dump(metrics_payload, handle, indent=2)
 
-        candidate_manifest = {
+        candidate_manifest: dict[str, Any] = {
             "status": "candidate",
             "selected_model": best_name,
             "version": model_version,
@@ -493,7 +511,9 @@ def train_models(sample_rows: int | None = None) -> None:
         updated_serve_cfg = deepcopy(serve_cfg)
         updated_serve_cfg.setdefault("service", {})
         updated_serve_cfg.setdefault("model", {})
-        updated_serve_cfg["service"]["candidate_bundle_path"] = str(bundle_path.relative_to(project_root))
+        updated_serve_cfg["service"]["candidate_bundle_path"] = str(
+            bundle_path.relative_to(project_root)
+        )
         updated_serve_cfg["model"]["threshold"] = float(best_threshold)
         updated_serve_cfg["model"]["selected_model"] = best_name
         updated_serve_cfg["model"]["version"] = model_version

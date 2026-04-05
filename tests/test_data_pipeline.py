@@ -17,4 +17,3 @@ def test_prepare_datasets_temporal_split(project_root) -> None:
     assert train_df["isFraud"].sum() > 0
     assert val_df["isFraud"].sum() > 0
     assert test_df["isFraud"].sum() > 0
-

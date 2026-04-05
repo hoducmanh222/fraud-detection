@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from contextlib import nullcontext
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 
 def get_mlflow():
@@ -33,14 +33,14 @@ def start_run(experiment_name: str, run_name: str):
     return mlflow.start_run(run_name=run_name)
 
 
-def log_params(params: Dict[str, Any]) -> None:
+def log_params(params: dict[str, Any]) -> None:
     mlflow, _ = get_mlflow()
     if mlflow is None:
         return
     mlflow.log_params(params)
 
 
-def log_metrics(metrics: Dict[str, float]) -> None:
+def log_metrics(metrics: dict[str, float]) -> None:
     mlflow, _ = get_mlflow()
     if mlflow is None:
         return
@@ -54,7 +54,7 @@ def log_artifact(path: Path, artifact_path: str | None = None) -> None:
     mlflow.log_artifact(str(path), artifact_path=artifact_path)
 
 
-def log_dict(payload: Dict[str, Any], artifact_path: str) -> None:
+def log_dict(payload: dict[str, Any], artifact_path: str) -> None:
     mlflow, _ = get_mlflow()
     if mlflow is None:
         return
@@ -78,4 +78,3 @@ def register_model_alias(model_name: str, source_uri: str, alias: str) -> dict[s
         }
     except Exception as exc:  # pragma: no cover - server dependent
         return {"registered": False, "reason": str(exc)}
-

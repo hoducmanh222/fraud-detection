@@ -109,7 +109,13 @@ def project_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
                 "reports_dir": "reports/metrics",
                 "target_column": "isFraud",
                 "split": {"train_ratio": 0.7, "val_ratio": 0.15, "test_ratio": 0.15},
-                "allowed_transaction_types": ["PAYMENT", "TRANSFER", "CASH_OUT", "DEBIT", "CASH_IN"],
+                "allowed_transaction_types": [
+                    "PAYMENT",
+                    "TRANSFER",
+                    "CASH_OUT",
+                    "DEBIT",
+                    "CASH_IN",
+                ],
             },
         },
     )
@@ -138,7 +144,12 @@ def project_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
                 "optuna": {"enabled": False, "n_trials": 1, "timeout_seconds": 30},
             },
             "selection": {"primary_metric": "auprc"},
-            "threshold": {"policy": "recall_first", "min_precision": 0.2, "max_fpr": 0.5, "fallback_threshold": 0.5},
+            "threshold": {
+                "policy": "recall_first",
+                "min_precision": 0.2,
+                "max_fpr": 0.5,
+                "fallback_threshold": 0.5,
+            },
             "promotion": {"min_auprc_delta": 0.0, "min_recall": 0.5, "max_fpr": 0.5},
         },
     )
@@ -149,7 +160,12 @@ def project_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
                 "model_bundle_path": "models/trained/production_model.joblib",
                 "active_registry_path": "models/registry/champion.json",
             },
-            "model": {"threshold": 0.5, "selected_model": "unknown", "version": "dev", "trained_at": None},
+            "model": {
+                "threshold": 0.5,
+                "selected_model": "unknown",
+                "version": "dev",
+                "trained_at": None,
+            },
         },
     )
     _write_yaml(
@@ -166,9 +182,11 @@ def project_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
             }
         },
     )
-    _write_json(root / "reports" / "drift" / "drift_report.json", {"summary": {"status": "ok"}, "numeric": {}, "categorical": {}})
+    _write_json(
+        root / "reports" / "drift" / "drift_report.json",
+        {"summary": {"status": "ok"}, "numeric": {}, "categorical": {}},
+    )
 
     monkeypatch.setenv("FRAUD_DETECTION_ROOT", str(root))
     monkeypatch.delenv("FRAUD_DETECTION_MODEL_PATH", raising=False)
     return root
-

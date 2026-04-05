@@ -18,9 +18,13 @@ def evaluate_model() -> None:
     data_cfg = load_yaml("configs/data.yaml")
     serve_cfg = load_yaml("configs/serve.yaml")
 
-    processed_dir = project_root / str(data_cfg.get("data", {}).get("processed_dir", "data/processed"))
+    processed_dir = project_root / str(
+        data_cfg.get("data", {}).get("processed_dir", "data/processed")
+    )
     bundle_path = project_root / str(
-        serve_cfg.get("service", {}).get("candidate_bundle_path", "models/trained/model_bundle.joblib")
+        serve_cfg.get("service", {}).get(
+            "candidate_bundle_path", "models/trained/model_bundle.joblib"
+        )
     )
     if not bundle_path.exists():
         bundle_path = project_root / "models" / "trained" / "model_bundle.joblib"
@@ -45,7 +49,9 @@ def evaluate_model() -> None:
     if y_test.nunique() < 2:
         figure = plt.figure(figsize=(6, 4))
         axis = figure.add_subplot(1, 1, 1)
-        axis.text(0.5, 0.5, "PR curve unavailable for single-class holdout", ha="center", va="center")
+        axis.text(
+            0.5, 0.5, "PR curve unavailable for single-class holdout", ha="center", va="center"
+        )
         axis.set_axis_off()
         figure.savefig(figure_path, dpi=150, bbox_inches="tight")
         plt.close(figure)
